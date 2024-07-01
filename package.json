@@ -11,5 +11,8 @@
     "url": "node-stage-1"
   },
   "author": "Odilson",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
 }

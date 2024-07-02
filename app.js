@@ -22,6 +22,17 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
+app.get("/api/hello", (req, res, next) => {
+  const visitor_name = req.query.visitor_name || "Mark";
+  const location = req.query.location || "Lagos"; // Default to "Unknown Location" if location is not provided
+  const temperature = req.query.temperature || "23"; // Default to "Unknown Temperature" if temperature is not provided
+  res.json({
+    client_ip: "127.0.0.1", // The IP address of the requester
+    location: location, // The city of the requester
+    greeting: `Hello, ${visitor_name}!, the temperature is ${temperature} degrees Celcius in ${location}`,
+  });
+});
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));

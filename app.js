@@ -3,11 +3,14 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+require("dotenv").config();
+const axios = require("axios");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 
 var app = express();
+app.set("trust proxy", true);
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -19,24 +22,40 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", indexRouter);
+// app.use("/", indexRouter);
+app.get("/", async (req, res) => {
+  const ip = req.ip;
+  res.send(ip);
+});
 
 app.use("/users", usersRouter);
 
 app.get("/api/hello", async (req, res, next) => {
-  const clientIp = req.ip;
   const visitor_name = req.query.visitor_name || "Mark";
-  const temperature = req.query.temperature || "23"; // Default to "Unknown Temperature" if temperature is not provided
 
-  var fetch_res = await fetch(`https://ipapi.co/${req.get("host")}/json/`);
-  var fetch_data = await fetch_res.json();
-  const location = fetch_data.region;
+  const clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+  try {
+    // Get location data from IP address
+    const locationResponse = await axios.get(
+      `http://api.ipstack.com/${clientIp}?access_key=${process.env.IPSTACK_KEY}`
+    );
+    const { city, country_code } = locationResponse.data;
 
-  res.json({
-    client_ip: clientIp, // The IP address of the requester
-    location: location, // The city of the requester
-    greeting: `Hello, ${visitor_name}!, the temperature is ${temperature} degrees Celcius in ${location}`,
-  });
+    // Get weather data for the location
+    const weatherResponse = await axios.get(
+      `https://api.openweathermap.org/data/2.5/weather?q=${city},${country_code}&appid=${process.env.OPENWEATHER_KEY}&units=metric`
+    );
+    const temperature = weatherResponse.data.main.temp;
+    const location = weatherResponse.data.name;
+
+    res.json({
+      client_ip: clientIp, // The IP address of the requester
+      location: location, // The city of the requester
+      greeting: `Hello, ${visitor_name}!, the temperature is ${temperature} degrees Celcius in ${location}`,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.toString() });
+  }
 });
 
 // catch 404 and forward to error handler

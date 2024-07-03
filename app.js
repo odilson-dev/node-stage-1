@@ -37,13 +37,13 @@ app.get("/api/hello", async (req, res, next) => {
   try {
     // Get location data from IP address
     const locationResponse = await axios.get(
-      `http://api.ipstack.com/${clientIp}?access_key=${process.env.IPSTACK_KEY}`
+      `http://api.ipstack.com/${clientIp}?access_key=b36bc2713163d33c7315fe2cf1757fba`
     );
     const { city, country_code } = locationResponse.data;
 
     // Get weather data for the location
     const weatherResponse = await axios.get(
-      `https://api.openweathermap.org/data/2.5/weather?q=${city},${country_code}&appid=${process.env.OPENWEATHER_KEY}&units=metric`
+      `https://api.openweathermap.org/data/2.5/weather?q=${city},${country_code}&appid=b40dacdf727ab9a1523506ac015d99d8&units=metric`
     );
     const temperature = weatherResponse.data.main.temp;
     const location = weatherResponse.data.name;

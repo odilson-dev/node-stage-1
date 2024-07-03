@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-// app.use("/", indexRouter);
+app.use("/", indexRouter);
 app.get("/", async (req, res) => {
   const ip = req.ip;
   res.send(ip);
@@ -33,7 +33,12 @@ app.use("/users", usersRouter);
 app.get("/api/hello", async (req, res, next) => {
   const visitor_name = req.query.visitor_name || "Mark";
 
-  const clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+  let clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+  if (clientIp.startsWith("::ffff:")) {
+    clientIp = clientIp.split("::ffff:")[1];
+  }
+
+  console.log(clientIp);
   try {
     // Get location data from IP address
     const locationResponse = await axios.get(

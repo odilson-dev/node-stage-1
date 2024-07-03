@@ -20,20 +20,18 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
+
 app.use("/users", usersRouter);
 
-// app.get("/location_specific_service", async (req, res) => {
-//   var fetch_res = await fetch(`https://ipapi.co/${req.get("host")}/json/`);
-//   var fetch_data = await fetch_res.json();
-
-//   res.send(`You are from ${fetch_data.region}`);
-// });
-
-app.get("/api/hello", (req, res, next) => {
-  const clientIp = req.get("host");
+app.get("/api/hello", async (req, res, next) => {
+  const clientIp = req.ip;
   const visitor_name = req.query.visitor_name || "Mark";
-  const location = req.query.location || "Lagos"; // Default to "Unknown Location" if location is not provided
   const temperature = req.query.temperature || "23"; // Default to "Unknown Temperature" if temperature is not provided
+
+  var fetch_res = await fetch(`https://ipapi.co/${req.get("host")}/json/`);
+  var fetch_data = await fetch_res.json();
+  const location = fetch_data.region;
+
   res.json({
     client_ip: clientIp, // The IP address of the requester
     location: location, // The city of the requester

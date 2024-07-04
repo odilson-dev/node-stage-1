@@ -30,11 +30,18 @@ app.use("/users", usersRouter);
 app.get("/api/hello", async (req, res, next) => {
   const visitor_name = req.query.visitor_name || "Mark";
 
-  let clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  console.log(clientIp);
+  let clientIpString =
+    req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+
+  // Create an array by splitting the string based on the comma delimiter and trimming any extra whitespace
+  const ipAddresses = clientIpString.split(",").map((ip) => ip.trim());
+
+  let clientIp = ipAddresses[0];
+
   if (clientIp.startsWith("::ffff:")) {
     clientIp = clientIp.split("::ffff:")[1];
   }
+
   try {
     // Get location data from IP address
     const locationResponse = await axios.get(

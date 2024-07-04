@@ -31,12 +31,10 @@ app.get("/api/hello", async (req, res, next) => {
   const visitor_name = req.query.visitor_name || "Mark";
 
   let clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-
-  if (net.isIPv6(clientIp)) {
-    const ipv4 = clientIp.split(":").reverse()[0];
-    clientIp = net.isIPv4(ipv4) ? ipv4 : clientIp;
-  }
   console.log(clientIp);
+  if (clientIp.startsWith("::ffff:")) {
+    clientIp = clientIp.split("::ffff:")[1];
+  }
   try {
     // Get location data from IP address
     const locationResponse = await axios.get(
@@ -57,7 +55,8 @@ app.get("/api/hello", async (req, res, next) => {
       greeting: `Hello, ${visitor_name}!, the temperature is ${temperature} degrees Celcius in ${location}`,
     });
   } catch (error) {
-    res.status(500).json({ error: error.toString() });
+    console.log(`Here is the ${clientIp}`);
+    res.send(`Here is the IP address ${clientIp}`);
   }
 });
 
